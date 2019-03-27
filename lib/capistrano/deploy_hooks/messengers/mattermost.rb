@@ -18,7 +18,6 @@ module Capistrano
         end
 
         def payloads_for(action)
-          binding.pry
           method = "payload_for_#{action}"
           return if !respond_to?(method)
 
