@@ -1,7 +1,12 @@
+# frozen_string_literal: true
 module Capistrano
   module DeployHooks
     module Messengers
       class Mattermost
+        GREEN = '#00FF00'
+        YELLOW = '#FFFF00'
+        RED = '#FF0000'
+
         extend Forwardable
         def_delegators :@cap, :fetch
 
@@ -13,6 +18,7 @@ module Capistrano
         end
 
         def payloads_for(action)
+          binding.pry
           method = "payload_for_#{action}"
           return if !respond_to?(method)
 
@@ -26,23 +32,98 @@ module Capistrano
         end
 
         def payload_for_updating
-          { text: "#{deployer} has started deploying branch #{branch} of #{application} to #{stage}" }
+          text = "#{deployer} has started deploying branch `#{branch}` of #{application} to **#{stage}** :call_me_hand:"
+          {
+            attachments: [
+              {
+                "color": GREEN,
+                "fallback": text,
+                "text": "Capistrano says:",
+                "fields": [
+                  {
+                    "short": false,
+                    "value": text,
+                  },
+                ]
+              },
+            ],
+          }
         end
 
         def payload_for_reverting
-          { text: "#{deployer} has started rolling back branch #{branch} of #{application} to #{stage}" }
+          text = "#{deployer} has started rolling back branch `#{branch}` of #{application} to **#{stage}** :hushed:"
+          {
+            attachments: [
+              {
+                "color": YELLOW,
+                "fallback": text,
+                "text": "Capistrano says:",
+                "fields": [
+                  {
+                    "short": false,
+                    "value": text,
+                  },
+                ]
+              },
+            ],
+          }
         end
 
         def payload_for_updated
-          { text: "#{deployer} has finished deploying branch #{branch} of #{application} to #{stage}" }
+          text = "#{deployer} has finished deploying back branch `#{branch}` of #{application} to **#{stage}** :white_check_mark:"
+          {
+            attachments: [
+              {
+                "color": GREEN,
+                "fallback": text,
+                "text": "Capistrano says:",
+                "fields": [
+                  {
+                    "short": false,
+                    "value": text,
+                  },
+                ]
+              },
+            ],
+          }
         end
 
         def payload_for_reverted
-          { text: "#{deployer} has finished rolling back branch of #{application} to #{stage}" }
+          text = "#{deployer} has finished rolling back branch `#{branch}` of #{application} to **#{stage}** :suspect:"
+          {
+            attachments: [
+              {
+                "color": YELLOW,
+                "fallback": text,
+                "text": "Capistrano says:",
+                "fields": [
+                  {
+                    "short": false,
+                    "value": text,
+                  },
+                ]
+              },
+            ],
+          }
         end
 
         def payload_for_failed
-          { text: "#{deployer} has failed to #{deploying? ? 'deploy' : 'rollback'} branch #{branch} of #{application} to #{stage}" }
+          text = "#{deployer} has failed to #{deploying? ? 'deploy' : 'rollback'} branch `#{branch}` of #{application} to **#{stage}** :scream:"
+          {
+            attachments: [
+              {
+                "color": RED,
+                "fallback": text,
+                "text": "Capistrano says:",
+                "fields": [
+                  {
+                    "short": false,
+                    "value": text,
+                  },
+                ]
+              },
+            ],
+          }
         end
 
         def webhook_for(_)
